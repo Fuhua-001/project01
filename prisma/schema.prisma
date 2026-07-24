@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ตารางเก็บข้อมูลลูกค้า (Customer)
+model Customer {
+  id          Int      @id @default(autoincrement()) // รหัสลูกค้า (Primary Key)
+  name        String   @unique                       // ชื่อลูกค้า
+  idPIC       Int      @unique                       // รหัสผู้รับผิดชอบ (Person In Charge)
+  TaxIDNumber Int      @unique                       // เลขประจำตัวผู้เสียภาษี
+  ACC_GRP     String   @unique                       // กลุ่มบัญชีลูกค้า
+  CT_PERS     String   @unique                       // ผู้ติดต่อ
+  Address     String?                                // ที่อยู่
+  email       String   @unique                       // อีเมล
+  PHONE       Int      @unique                       // เบอร์โทรศัพท์
+  ALL_CONT    String?  @unique                       // ช่องทางการติดต่ออื่นๆ
+  NOTE        String?  @unique                       // หมายเหตุ
+  CR_DATE     DateTime @default(now())               // วันที่สร้างข้อมูล
+}
+
+// ตารางเก็บข้อมูลสินค้า (Product)
+model product {
+  id           Int      @id @default(autoincrement()) // รหัสสินค้า (Primary Key)
+  PROD_NAME    String   @unique                       // ชื่อสินค้า
+  PROD_ALIAS   String   @unique                       // ชื่อเรียกอื่นของสินค้า
+  UNIT         Int      @unique                       // หน่วยนับ
+  ProductType1 String                                 // ประเภทสินค้า 1
+  ProductType2 String                                 // ประเภทสินค้า 2
+  BUY_PRICE    Int                                    // ราคาซื้อ
+  SALES_PRICE  Int                                    // ราคาขาย
+  INPUT_VAT    Int                                    // ภาษีซื้อ
+  OUTPUT_VAT   Int                                    // ภาษีขาย
+  BARCODE      String   @unique                       // รหัสบาร์โค้ด
+  KEYWORD      String?  @unique                       // คำค้นหาสินค้า
+  LIMIT        Int                                    // จุดสั่งซื้อหรือขีดจำกัด
+  Status       String                                 // สถานะสินค้า (เช่น พร้อมขาย, ยกเลิก)
+  BRAND        String                                 // ยี่ห้อ
+  PROD_GRP     String                                 // กลุ่มสินค้า
+  CREATOR      String                                 // ผู้สร้างข้อมูล
+  UpdatedBy    String                                 // ผู้อัปเดตข้อมูลล่าสุด
+  UPD_TIME     DateTime @default(now())               // เวลาที่อัปเดต
+  LAST_UPD     DateTime @default(now())               // เวลาที่อัปเดตล่าสุด
+  NOTE         String?  @unique                       // หมายเหตุ
+}
+
+// ตารางเก็บข้อมูลคลังสินค้า (Stock)
+model Stock {
+  id           Int      @id @default(autoincrement()) // รหัสคลังสินค้า (Primary Key)
+  CODE         String   @unique                       // รหัสอ้างอิง
+  PROD_NAME    String   @unique                       // ชื่อสินค้า
+  UNIT         Int      @unique                       // หน่วยนับ
+  LIMIT        Int                                    // จุดแจ้งเตือนปริมาณขั้นต่ำ
+  ProductType1 String                                 // ประเภทสินค้า 1
+  ProductType2 String                                 // ประเภทสินค้า 2
+  BARCODE      String   @unique                       // รหัสบาร์โค้ด
+  KEYWORD      String?  @unique                       // คำค้นหา
+  Status       String                                 // สถานะคงคลัง
+  BRAND        String                                 // ยี่ห้อสินค้า
+  PROD_GRP     String                                 // กลุ่มสินค้า
+  ReceivedDate DateTime @default(now())               // วันที่รับเข้า
+  SalesDate    DateTime @default(now())               // วันที่ขายออก
+  UpdatedDate  DateTime @default(now())               // วันที่อัปเดตข้อมูลล่าสุด
+}
+
+// ตารางเก็บข้อมูลพนักงาน (Employee)
+model Empolyee {
+  IdPIC         Int      @id @default(autoincrement()) // รหัสพนักงาน (Primary Key)
+  Name_PIC      String   @unique                       // ชื่อพนักงาน
+  NemeEN_PIC    String   @unique                       // ชื่อพนักงาน (ภาษาอังกฤษ)
+  Keyword       String?  @unique                       // คำค้นหาพนักงาน
+  Department    String                                 // แผนกที่สังกัด
+  ContactNumber Int      @unique                       // เบอร์โทรศัพท์ติดต่อ
+  PIC_IMAG_URL  String?  @unique                       // รูปภาพประจำตัวพนักงาน
+  NOTE          String?  @unique                       // หมายเหตุ
+}
+
+// ตารางเก็บข้อมูลเอกสารการขายหรือขอซื้อ (Sales / Purchase Request)
+model sales_pr {
+  Id              Int      @id @default(autoincrement()) // รหัสเอกสาร (Primary Key)
+  DATE            DateTime @default(now())               // วันที่ทำรายการ
+  Number          Int      @unique                       // เลขที่เอกสาร
+  IdPIC           Int                                    // รหัสพนักงานผู้รับผิดชอบ
+  Customer_Vendor String                                 // ชื่อลูกค้า หรือผู้จำหน่าย
+  CONTACT         String                                 // ข้อมูลผู้ติดต่อ
+  Phone           Int                                    // เบอร์โทรศัพท์ติดต่อ
+  PriceValidity   String                                 // ระยะเวลายืนยันราคา
+  Email           String                                 // อีเมล
+  CreditTerms     Int                                    // เครดิตเทอม (จำนวนวัน)
+  TransactionType String                                 // ประเภทธุรกรรม (เช่น ขาย, ขอซื้อ)
+  PaymentTerms    String                                 // เงื่อนไขการชำระเงิน
+  CreatedBy       String                                 // ผู้สร้างเอกสาร
+  UpdatedBy       String                                 // ผู้อัปเดตเอกสาร
+  UPD_TIME        DateTime @default(now())               // เวลาที่อัปเดต
+  LAST_UPD        DateTime @default(now())               // เวลาที่อัปเดตล่าสุด
+}
+
+// ตารางเก็บข้อมูลรายการสินค้าย่อยในเอกสารการขาย/PR
+model sub_sales_pr {
+  Id         Int    @id @default(autoincrement()) // รหัสรายการย่อย (Primary Key)
+  ITEM_CODE  String                               // รหัสสินค้า
+  PROD_NAME  String                               // ชื่อสินค้า
+  SPEC       String                               // สเปคหรือรายละเอียดสินค้า
+  Quantity   Int                                  // จำนวนสินค้า
+  UNIT       Int                                  // หน่วยนับ
+  UNIT_PRICE Int                                  // ราคาต่อหน่วย
+  Amount     Int                                  // ยอดรวมก่อนภาษี
+  VAT        Float                                // ภาษีมูลค่าเพิ่ม
+  TOTAL      Float                                // ยอดรวมสุทธิ
+}

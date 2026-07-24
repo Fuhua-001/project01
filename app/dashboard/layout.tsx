@@ -12,7 +12,7 @@ export default function DashboardLayout({
       <aside className="w-64 bg-slate-900 border-r border-white/10 flex flex-col">
         <div className="p-6">
           <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-indigo-400 bg-clip-text text-transparent">
-            System CLI
+            System CRM
           </h2>
         </div>
         
