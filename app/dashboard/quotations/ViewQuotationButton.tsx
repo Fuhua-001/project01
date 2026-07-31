@@ -24,7 +24,14 @@ export default function ViewQuotationButton({ doc, items, creatorName }: { doc: 
                 
                 for (let i = 0; i < pageElements.length; i++) {
                     const pageEl = pageElements[i] as HTMLElement;
-                    const canvas = await html2canvas(pageEl, { scale: 2 });
+                    const canvas = await html2canvas(pageEl, { 
+                        scale: 2, 
+                        useCORS: true,
+                        scrollY: 0,
+                        scrollX: 0,
+                        windowWidth: pageEl.scrollWidth,
+                        windowHeight: pageEl.scrollHeight
+                    });
                     const imgData = canvas.toDataURL('image/png');
                     
                     const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -78,6 +85,7 @@ export default function ViewQuotationButton({ doc, items, creatorName }: { doc: 
                                     creditTerms={doc.CreditTerms.toString()}
                                     priceValidity={doc.PriceValidity}
                                     items={items}
+                                    docDate={doc.DATE}
                                 />
                             </div>
                         </div>

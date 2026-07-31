@@ -13,12 +13,15 @@ type QuotationPDFProps = {
     creditTerms: string;
     priceValidity: string;
     items: any[];
+    docDate?: Date;
 };
 
 export const QuotationPDF = React.forwardRef<HTMLDivElement, QuotationPDFProps>(({
     number, customerVendor, contact, phone, email, idPIC, creatorName,
-    transactionType, paymentTerms, creditTerms, priceValidity, items
+    transactionType, paymentTerms, creditTerms, priceValidity, items, docDate
 }, ref) => {
+    
+    const displayDate = docDate ? new Date(docDate).toLocaleDateString('th-TH') : new Date().toLocaleDateString('th-TH');
     
     const subtotal = items.reduce((sum, item) => sum + item.Amount, 0);
     const vat = items.reduce((sum, item) => sum + item.VAT, 0);
@@ -35,7 +38,7 @@ export const QuotationPDF = React.forwardRef<HTMLDivElement, QuotationPDFProps>(
     }
 
     return (
-        <div ref={ref} className="flex flex-col gap-4 bg-slate-200 p-4">
+        <div ref={ref} style={{ display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: '#e2e8f0', padding: '16px' }}>
             {pages.map((pageItems, pageIndex) => {
                 const isLastPage = pageIndex === pages.length - 1;
                 const startIndex = pageIndex * ITEMS_PER_PAGE;
@@ -43,63 +46,64 @@ export const QuotationPDF = React.forwardRef<HTMLDivElement, QuotationPDFProps>(
                 return (
                     <div 
                         key={pageIndex}
-                        className="pdf-page p-8 w-[210mm] h-[297mm] mx-auto box-border relative shadow-lg bg-white overflow-hidden"
-                        style={{ fontFamily: 'sans-serif', backgroundColor: '#ffffff', color: '#000000' }}
+                        className="pdf-page box-border relative shadow-lg bg-white overflow-hidden"
+                        style={{ width: '210mm', height: '297mm', padding: '32px', margin: '0 auto', fontFamily: 'sans-serif', backgroundColor: '#ffffff', color: '#000000' }}
                     >
-                        {/* Header (Repeated on every page) */}
-                        <div className="flex justify-between items-start mb-8 border-b-2 pb-6" style={{ borderColor: '#e2e8f0' }}>
+                        {/* Header (Repeated on every page) - Reverted to first print layout */}
+                        <div className="flex justify-between items-start" style={{ marginBottom: '32px', borderBottom: '2px solid #e2e8f0', paddingBottom: '24px' }}>
                             <div>
-                                <h1 className="text-3xl font-bold" style={{ color: '#4338ca' }}>ใบเสนอราคา</h1>
-                                <p className="text-lg mt-1" style={{ color: '#475569' }}>QUOTATION</p>
+                                <h1 className="text-3xl font-bold" style={{ color: '#4338ca', margin: 0 }}>ใบเสนอราคา</h1>
+                                <p className="text-lg" style={{ color: '#475569', marginTop: '4px', margin: 0 }}>QUOTATION</p>
                             </div>
                             <div className="text-right text-sm">
-                                <p><span className="font-semibold">หน้า (Page):</span> {pageIndex + 1} / {pages.length}</p>
-                                <p><span className="font-semibold">เลขที่ (No):</span> {number || '-'}</p>
-                                <p><span className="font-semibold">วันที่ (Date):</span> {new Date().toLocaleDateString('th-TH')}</p>
-                                <p><span className="font-semibold">ประเภท (Type):</span> {transactionType}</p>
+                                <p style={{ margin: '0 0 4px 0' }}><span className="font-semibold">หน้า (Page):</span> {pageIndex + 1} / {pages.length}</p>
+                                <p style={{ margin: '0 0 4px 0' }}><span className="font-semibold">เลขที่ (No):</span> {number || '-'}</p>
+                                <p style={{ margin: '0 0 4px 0' }}><span className="font-semibold">วันที่ (Date):</span> {displayDate}</p>
+                                <p style={{ margin: 0 }}><span className="font-semibold">ประเภท (Type):</span> {transactionType}</p>
                             </div>
                         </div>
 
-                        <div className="flex justify-between mb-8 text-sm">
-                            <div className="w-1/2 pr-4">
-                                <h2 className="font-bold text-base mb-2 border-b pb-1" style={{ borderColor: '#e2e8f0' }}>ข้อมูลลูกค้า (Customer Info)</h2>
-                                <p><span className="font-semibold">ชื่อลูกค้า:</span> {customerVendor || '-'}</p>
-                                <p><span className="font-semibold">ผู้ติดต่อ:</span> {contact || '-'}</p>
-                                <p><span className="font-semibold">เบอร์โทรศัพท์:</span> {phone || '-'}</p>
-                                <p><span className="font-semibold">อีเมล:</span> {email || '-'}</p>
+                        {/* Customer Info and Terms - Reverted to first print layout */}
+                        <div className="flex justify-between text-sm" style={{ marginBottom: '32px' }}>
+                            <div style={{ width: '48%', paddingRight: '16px' }}>
+                                <h2 className="font-bold text-base" style={{ marginBottom: '8px', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>ข้อมูลลูกค้า (Customer Info)</h2>
+                                <p style={{ margin: '0 0 4px 0' }}><span className="font-semibold">ชื่อลูกค้า:</span> {customerVendor || '-'}</p>
+                                <p style={{ margin: '0 0 4px 0' }}><span className="font-semibold">ผู้ติดต่อ:</span> {contact || '-'}</p>
+                                <p style={{ margin: '0 0 4px 0' }}><span className="font-semibold">เบอร์โทรศัพท์:</span> {phone || '-'}</p>
+                                <p style={{ margin: 0 }}><span className="font-semibold">อีเมล:</span> {email || '-'}</p>
                             </div>
-                            <div className="w-1/2 pl-4">
-                                <h2 className="font-bold text-base mb-2 border-b pb-1" style={{ borderColor: '#e2e8f0' }}>เงื่อนไข (Terms)</h2>
-                                <p><span className="font-semibold">พนักงานขาย:</span> {creatorName} ({idPIC})</p>
-                                <p><span className="font-semibold">เงื่อนไขชำระเงิน:</span> {paymentTerms || '-'}</p>
-                                <p><span className="font-semibold">เครดิต (วัน):</span> {creditTerms || '0'}</p>
-                                <p><span className="font-semibold">ยืนยันราคา:</span> {priceValidity || '-'}</p>
+                            <div style={{ width: '48%', paddingLeft: '16px' }}>
+                                <h2 className="font-bold text-base" style={{ marginBottom: '8px', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>เงื่อนไข (Terms)</h2>
+                                <p style={{ margin: '0 0 4px 0' }}><span className="font-semibold">พนักงานขาย:</span> {creatorName} ({idPIC})</p>
+                                <p style={{ margin: '0 0 4px 0' }}><span className="font-semibold">เงื่อนไขชำระเงิน:</span> {paymentTerms || '-'}</p>
+                                <p style={{ margin: '0 0 4px 0' }}><span className="font-semibold">เครดิต (วัน):</span> {creditTerms || '0'}</p>
+                                <p style={{ margin: 0 }}><span className="font-semibold">ยืนยันราคา:</span> {priceValidity || '-'}</p>
                             </div>
                         </div>
 
-                        {/* Table (Content changes per page) */}
-                        <div className="min-h-[400px]">
-                            <table className="w-full text-sm border-collapse">
+                        {/* Table */}
+                        <div style={{ minHeight: '400px' }}>
+                            <table className="text-sm" style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <thead>
-                                    <tr className="border" style={{ backgroundColor: '#f1f5f9', borderColor: '#cbd5e1' }}>
-                                        <th className="py-2 px-2 border w-12 text-center" style={{ borderColor: '#cbd5e1' }}>ลำดับ<br/>(Item)</th>
-                                        <th className="py-2 px-2 border" style={{ borderColor: '#cbd5e1' }}>รหัส/รายละเอียด<br/>(Code/Description)</th>
-                                        <th className="py-2 px-2 border w-20 text-center" style={{ borderColor: '#cbd5e1' }}>จำนวน<br/>(Qty)</th>
-                                        <th className="py-2 px-2 border w-24 text-right" style={{ borderColor: '#cbd5e1' }}>ราคา/หน่วย<br/>(Unit Price)</th>
-                                        <th className="py-2 px-2 border w-28 text-right" style={{ borderColor: '#cbd5e1' }}>จำนวนเงิน<br/>(Amount)</th>
+                                    <tr style={{ backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1' }}>
+                                        <th className="text-center" style={{ width: '50px', padding: '8px', border: '1px solid #cbd5e1' }}>ลำดับ<br/>(Item)</th>
+                                        <th className="text-left" style={{ padding: '8px 16px', border: '1px solid #cbd5e1' }}>รหัส/รายละเอียด<br/>(Code/Description)</th>
+                                        <th className="text-center" style={{ width: '80px', padding: '8px', border: '1px solid #cbd5e1' }}>จำนวน<br/>(Qty)</th>
+                                        <th className="text-right" style={{ width: '100px', padding: '8px', border: '1px solid #cbd5e1' }}>ราคา/หน่วย<br/>(Unit Price)</th>
+                                        <th className="text-right" style={{ width: '120px', padding: '8px', border: '1px solid #cbd5e1' }}>จำนวนเงิน<br/>(Amount)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {pageItems.map((item, localIndex) => (
-                                        <tr key={localIndex} className="border-b" style={{ borderColor: '#e2e8f0' }}>
-                                            <td className="py-2 px-2 border-x text-center" style={{ borderColor: '#cbd5e1' }}>{startIndex + localIndex + 1}</td>
-                                            <td className="py-2 px-2 border-x" style={{ borderColor: '#cbd5e1' }}>
-                                                <p className="font-medium">{item.PROD_NAME || '-'}</p>
-                                                <p className="text-xs" style={{ color: '#64748b' }}>{item.ITEM_CODE} {item.SPEC ? `| ${item.SPEC}` : ''}</p>
+                                        <tr key={localIndex} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                            <td className="text-center" style={{ padding: '8px', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{startIndex + localIndex + 1}</td>
+                                            <td className="text-left" style={{ padding: '8px 16px', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>
+                                                <p className="font-medium" style={{ margin: '0 0 4px 0' }}>{item.PROD_NAME || '-'}</p>
+                                                <p className="text-xs" style={{ color: '#64748b', margin: 0 }}>{item.ITEM_CODE} {item.SPEC ? `| ${item.SPEC}` : ''}</p>
                                             </td>
-                                            <td className="py-2 px-2 border-x text-center" style={{ borderColor: '#cbd5e1' }}>{item.Quantity || 0}</td>
-                                            <td className="py-2 px-2 border-x text-right" style={{ borderColor: '#cbd5e1' }}>{(Number(item.UNIT_PRICE) || 0).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
-                                            <td className="py-2 px-2 border-x text-right" style={{ borderColor: '#cbd5e1' }}>{(Number(item.Amount) || 0).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
+                                            <td className="text-center" style={{ padding: '8px', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{item.Quantity || 0}</td>
+                                            <td className="text-right" style={{ padding: '8px', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{(Number(item.UNIT_PRICE) || 0).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
+                                            <td className="text-right" style={{ padding: '8px', borderLeft: '1px solid #cbd5e1', borderRight: '1px solid #cbd5e1' }}>{(Number(item.Amount) || 0).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -108,18 +112,18 @@ export const QuotationPDF = React.forwardRef<HTMLDivElement, QuotationPDFProps>(
 
                         {/* Summary and Signatures (Only on the last page) */}
                         {isLastPage && (
-                            <div className="absolute bottom-8 left-8 right-8">
-                                <div className="flex justify-end mb-8">
-                                    <div className="w-64 text-sm">
-                                        <div className="flex justify-between py-1">
+                            <div style={{ position: 'absolute', bottom: '32px', left: '32px', right: '32px' }}>
+                                <div className="flex justify-end" style={{ marginBottom: '32px' }}>
+                                    <div className="text-sm" style={{ width: '250px' }}>
+                                        <div className="flex justify-between" style={{ padding: '4px 0' }}>
                                             <span>รวมเงิน (Sub Total):</span>
                                             <span>{subtotal.toLocaleString('th-TH', {minimumFractionDigits: 2})} ฿</span>
                                         </div>
-                                        <div className="flex justify-between py-1">
+                                        <div className="flex justify-between" style={{ padding: '4px 0' }}>
                                             <span>ภาษีมูลค่าเพิ่ม (VAT 7%):</span>
                                             <span>{vat.toLocaleString('th-TH', {minimumFractionDigits: 2})} ฿</span>
                                         </div>
-                                        <div className="flex justify-between py-2 border-t-2 border-b-2 font-bold text-base mt-1" style={{ borderColor: '#cbd5e1' }}>
+                                        <div className="flex justify-between font-bold text-base" style={{ padding: '8px 0', borderTop: '2px solid #cbd5e1', borderBottom: '2px solid #cbd5e1', marginTop: '4px' }}>
                                             <span>ยอดรวมสุทธิ (Grand Total):</span>
                                             <span>{total.toLocaleString('th-TH', {minimumFractionDigits: 2})} ฿</span>
                                         </div>
@@ -127,20 +131,20 @@ export const QuotationPDF = React.forwardRef<HTMLDivElement, QuotationPDFProps>(
                                 </div>
 
                                 <div className="flex justify-between text-center text-sm">
-                                    <div className="w-1/3">
-                                        <p className="border-t pt-2 mx-4" style={{ borderColor: '#94a3b8' }}>ผู้เสนอราคา (Prepared By)</p>
-                                        <p className="mt-1 font-semibold">{creatorName}</p>
-                                        <p className="text-xs mt-1" style={{ color: '#64748b' }}>วันที่ ______________</p>
+                                    <div style={{ width: '30%' }}>
+                                        <p style={{ borderTop: '1px solid #94a3b8', paddingTop: '8px', margin: '0 16px' }}>ผู้เสนอราคา (Prepared By)</p>
+                                        <p className="font-semibold" style={{ marginTop: '4px', margin: 0 }}>{creatorName}</p>
+                                        <p className="text-xs" style={{ color: '#64748b', marginTop: '4px', margin: 0 }}>วันที่ {displayDate}</p>
                                     </div>
-                                    <div className="w-1/3">
-                                        <p className="border-t pt-2 mx-4" style={{ borderColor: '#94a3b8' }}>ผู้อนุมัติ (Authorized By)</p>
-                                        <p className="mt-1">&nbsp;</p>
-                                        <p className="text-xs mt-1" style={{ color: '#64748b' }}>วันที่ ______________</p>
+                                    <div style={{ width: '30%' }}>
+                                        <p style={{ borderTop: '1px solid #94a3b8', paddingTop: '8px', margin: '0 16px' }}>ผู้อนุมัติ (Authorized By)</p>
+                                        <p style={{ color: '#94a3b8', marginTop: '4px', margin: 0 }}>(________________________)</p>
+                                        <p className="text-xs" style={{ color: '#64748b', marginTop: '4px', margin: 0 }}>วันที่ ______________</p>
                                     </div>
-                                    <div className="w-1/3">
-                                        <p className="border-t pt-2 mx-4" style={{ borderColor: '#94a3b8' }}>ผู้รับใบเสนอราคา (Accepted By)</p>
-                                        <p className="mt-1">&nbsp;</p>
-                                        <p className="text-xs mt-1" style={{ color: '#64748b' }}>วันที่ ______________</p>
+                                    <div style={{ width: '30%' }}>
+                                        <p style={{ borderTop: '1px solid #94a3b8', paddingTop: '8px', margin: '0 16px' }}>ผู้รับใบเสนอราคา (Accepted By)</p>
+                                        <p style={{ color: '#94a3b8', marginTop: '4px', margin: 0 }}>(________________________)</p>
+                                        <p className="text-xs" style={{ color: '#64748b', marginTop: '4px', margin: 0 }}>วันที่ ______________</p>
                                     </div>
                                 </div>
                             </div>

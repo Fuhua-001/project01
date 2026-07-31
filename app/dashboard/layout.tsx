@@ -23,6 +23,9 @@ export default function DashboardLayout({
           <Link href="/dashboard/quotations" className="block px-4 py-3 rounded-lg hover:bg-white/5 transition-colors text-slate-300 hover:text-white">
             📝 ใบเสนอราคา (Quotations)
           </Link>
+          <Link href="/dashboard/quotations/ai" className="block px-4 py-3 pl-8 rounded-lg hover:bg-white/5 transition-colors text-slate-300 hover:text-violet-300 text-sm">
+            ✨ AI สร้างใบเสนอราคา
+          </Link>
           <Link href="/dashboard/customers" className="block px-4 py-3 rounded-lg hover:bg-white/5 transition-colors text-slate-300 hover:text-white">
             👥 ฐานข้อมูลลูกค้า (Customers)
           </Link>

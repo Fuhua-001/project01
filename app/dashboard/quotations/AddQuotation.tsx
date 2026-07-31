@@ -115,7 +115,14 @@ export default function AddQuotationForm({ customers, employees, products }: { c
                 
                 for (let i = 0; i < pageElements.length; i++) {
                     const pageEl = pageElements[i] as HTMLElement;
-                    const canvas = await html2canvas(pageEl, { scale: 2 });
+                    const canvas = await html2canvas(pageEl, { 
+                        scale: 2, 
+                        useCORS: true,
+                        scrollY: 0,
+                        scrollX: 0,
+                        windowWidth: pageEl.scrollWidth,
+                        windowHeight: pageEl.scrollHeight
+                    });
                     const imgData = canvas.toDataURL('image/png');
                     
                     const pdfWidth = pdf.internal.pageSize.getWidth();

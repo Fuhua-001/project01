@@ -30,5 +30,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "test_relation.ts", "diagnose2.js", "diagnose_relation.js", "diagnose_relation.mjs", "verify_relation.mjs"]
 }
