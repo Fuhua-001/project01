@@ -14,18 +14,28 @@ export default function ViewQuotationButton({ doc, items, creatorName }: { doc: 
         setIsDownloading(true);
         try {
             if (pdfRef.current) {
-                const canvas = await html2canvas(pdfRef.current, { scale: 2 });
-                const imgData = canvas.toDataURL('image/png');
                 const pdf = new jsPDF({
                     orientation: 'portrait',
                     unit: 'mm',
                     format: 'a4'
                 });
+
+                const pageElements = pdfRef.current.querySelectorAll('.pdf-page');
                 
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                for (let i = 0; i < pageElements.length; i++) {
+                    const pageEl = pageElements[i] as HTMLElement;
+                    const canvas = await html2canvas(pageEl, { scale: 2 });
+                    const imgData = canvas.toDataURL('image/png');
+                    
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                    
+                    if (i > 0) {
+                        pdf.addPage();
+                    }
+                    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                }
                 
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
                 pdf.save(`Quotation_${doc.Number}.pdf`);
             }
         } catch (error: any) {

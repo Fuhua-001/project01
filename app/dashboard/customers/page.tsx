@@ -1,10 +1,20 @@
 import AddCustomerForm from "./AddCustomerForm";
 import { prisma } from "@/lib/prisma";
+import Link from "next/link";
 
 export const dynamic = 'force-dynamic';
 
-export default async function CustomersPage() {
-  const customers = await prisma.customer.findMany();
+export default async function CustomersPage(props: { searchParams?: Promise<{ page?: string }> }) {
+  const searchParams = await props.searchParams;
+  const page = parseInt(searchParams?.page || "1", 10);
+  const take = 20;
+  const skip = (page - 1) * take;
+
+  const [customers, total] = await Promise.all([
+    prisma.customer.findMany({ skip, take }),
+    prisma.customer.count()
+  ]);
+  const totalPages = Math.ceil(total / take);
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -12,7 +22,7 @@ export default async function CustomersPage() {
         <AddCustomerForm />
       </div>
       <div className="bg-slate-900/50 p-6 rounded-2xl border border-white/5 min-h-[400px]">
-        <h2 className="text-xl text-white mb-4">รายชื่อลูกค้าทั้งหมด ({customers.length} คน)</h2>
+        <h2 className="text-xl text-white mb-4">รายชื่อลูกค้าทั้งหมด (รวม {total} คน)</h2>
         
         <div className="overflow-x-auto w-full">
             <table className="w-full text-left text-slate-300 min-w-max">
@@ -51,6 +61,14 @@ export default async function CustomersPage() {
 
         {customers.length === 0 && (
           <p className="text-center text-slate-500 mt-6">ยังไม่มีข้อมูลลูกค้า</p>
+        )}
+
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-6 gap-2">
+            {page > 1 && <Link href={`?page=${page - 1}`} className="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-600 transition-colors">ก่อนหน้า</Link>}
+            <span className="px-3 py-1 bg-slate-800 text-slate-300 rounded">หน้า {page} จาก {totalPages}</span>
+            {page < totalPages && <Link href={`?page=${page + 1}`} className="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-600 transition-colors">ถัดไป</Link>}
+          </div>
         )}
       </div>
     </div>

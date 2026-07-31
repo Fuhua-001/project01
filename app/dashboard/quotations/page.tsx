@@ -2,15 +2,28 @@ import { prisma } from "@/lib/prisma";
 import AddQuotationForm from "./AddQuotation";
 import ViewQuotationButton from "./ViewQuotationButton";
 import { fetchFormData } from "./actions";
+import Link from "next/link";
 
-export default async function QuotationsPage() {
+export default async function QuotationsPage(props: { searchParams?: Promise<{ page?: string }> }) {
+    // Pagination params
+    const searchParams = await props.searchParams;
+    const page = parseInt(searchParams?.page || "1", 10);
+    const take = 20;
+    const skip = (page - 1) * take;
+
     // Fetch formData for the add form
     const { customers, employees, products } = await fetchFormData();
     
     // Fetch existing quotations
-    const quotations = await prisma.sales_pr.findMany({
-        orderBy: { DATE: 'desc' }
-    });
+    const [quotations, total] = await Promise.all([
+        prisma.sales_pr.findMany({
+            orderBy: { DATE: 'desc' },
+            skip,
+            take
+        }),
+        prisma.sales_pr.count()
+    ]);
+    const totalPages = Math.ceil(total / take);
     
     // Fetch all sub items to calculate total
     const subItems = await prisma.sub_sales_pr.findMany();
@@ -25,7 +38,7 @@ export default async function QuotationsPage() {
                 <AddQuotationForm customers={customers} employees={employees} products={products} />
             </div>
 
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
+            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden mb-6">
                 <table className="w-full text-left text-sm">
                     <thead>
                         <tr className="border-b border-slate-700 bg-slate-900/80">
@@ -72,6 +85,14 @@ export default async function QuotationsPage() {
                     </tbody>
                 </table>
             </div>
+
+            {totalPages > 1 && (
+                <div className="flex justify-center mt-6 gap-2">
+                    {page > 1 && <Link href={`?page=${page - 1}`} className="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-600 transition-colors">ก่อนหน้า</Link>}
+                    <span className="px-3 py-1 bg-slate-800 text-slate-300 rounded">หน้า {page} จาก {totalPages}</span>
+                    {page < totalPages && <Link href={`?page=${page + 1}`} className="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-600 transition-colors">ถัดไป</Link>}
+                </div>
+            )}
         </div>
     );
 }
