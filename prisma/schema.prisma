@@ -88,11 +88,11 @@ model Empolyee {
 model sales_pr {
   Id              Int      @id @default(autoincrement()) // รหัสเอกสาร (Primary Key)
   DATE            DateTime @default(now())               // วันที่ทำรายการ
-  Number          Int      @unique                       // เลขที่เอกสาร
-  IdPIC           Int                                    // รหัสพนักงานผู้รับผิดชอบ
+  Number          String   @unique                       // เลขที่เอกสาร
+  IdPIC           String                                 // รหัสพนักงานผู้รับผิดชอบ
   Customer_Vendor String                                 // ชื่อลูกค้า หรือผู้จำหน่าย
   CONTACT         String                                 // ข้อมูลผู้ติดต่อ
-  Phone           Int                                    // เบอร์โทรศัพท์ติดต่อ
+  Phone           String                                 // เบอร์โทรศัพท์ติดต่อ
   PriceValidity   String                                 // ระยะเวลายืนยันราคา
   Email           String                                 // อีเมล
   CreditTerms     Int                                    // เครดิตเทอม (จำนวนวัน)
@@ -107,13 +107,14 @@ model sales_pr {
 // ตารางเก็บข้อมูลรายการสินค้าย่อยในเอกสารการขาย/PR
 model sub_sales_pr {
   Id         Int    @id @default(autoincrement()) // รหัสรายการย่อย (Primary Key)
+  sales_pr_Id Int                                 // รหัสเอกสารหลัก (Foreign Key)
   ITEM_CODE  String                               // รหัสสินค้า
   PROD_NAME  String                               // ชื่อสินค้า
   SPEC       String                               // สเปคหรือรายละเอียดสินค้า
   Quantity   Int                                  // จำนวนสินค้า
   UNIT       Int                                  // หน่วยนับ
-  UNIT_PRICE Int                                  // ราคาต่อหน่วย
-  Amount     Int                                  // ยอดรวมก่อนภาษี
+  UNIT_PRICE Float                                // ราคาต่อหน่วย
+  Amount     Float                                // ยอดรวมก่อนภาษี
   VAT        Float                                // ภาษีมูลค่าเพิ่ม
   TOTAL      Float                                // ยอดรวมสุทธิ
 }
