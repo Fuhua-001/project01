@@ -1,4 +1,7 @@
 import AddInventoryForm from "./AddInventory";
+import EditInventoryModal from "./EditInventoryModal";
+import DeleteButton from "../DeleteButton";
+import { deleteProduct } from "./actions";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
@@ -41,23 +44,30 @@ export default async function InventoryPage(props: { searchParams?: Promise<{ pa
                 <th className="py-2 px-4">ราคาขาย</th>
                 <th className="py-2 px-4">หน่วยนับ</th>
                 <th className="py-2 px-4">หมายเหตุ</th>
+                <th className="py-2 px-4 text-center">จัดการ</th>
                 </tr>
             </thead>
             <tbody>
                 {products.map((p) => (
                 <tr key={p.id} className="border-b border-slate-800 hover:bg-slate-800/50">
-                    <td className="py-2 px-4">{p.id}</td>
-                    <td className="py-2 px-4">{p.PROD_NAME}</td>
-                    <td className="py-2 px-4">{p.BARCODE}</td>
+                    <td className="py-2 px-4 font-mono text-xs">{p.id}</td>
+                    <td className="py-2 px-4 font-medium text-white">{p.PROD_NAME}</td>
+                    <td className="py-2 px-4 text-xs font-mono">{p.BARCODE}</td>
                     <td className="py-2 px-4">{p.ProductType1}</td>
                     <td className="py-2 px-4">{p.ProductType2}</td>
                     <td className="py-2 px-4">{p.BRAND}</td>
                     <td className="py-2 px-4">{p.PROD_GRP}</td>
                     <td className="py-2 px-4">{p.Status}</td>
-                    <td className="py-2 px-4">{p.BUY_PRICE}</td>
-                    <td className="py-2 px-4">{p.SALES_PRICE}</td>
+                    <td className="py-2 px-4">{p.BUY_PRICE.toLocaleString()} ฿</td>
+                    <td className="py-2 px-4 font-semibold text-white">{p.SALES_PRICE.toLocaleString()} ฿</td>
                     <td className="py-2 px-4">{p.UNIT}</td>
-                    <td className="py-2 px-4">{p.NOTE || "-"}</td>
+                    <td className="py-2 px-4 text-xs text-slate-400">{p.NOTE || "-"}</td>
+                    <td className="py-2 px-4 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <EditInventoryModal product={p} />
+                        <DeleteButton id={p.id} itemName={p.PROD_NAME} onDelete={deleteProduct} />
+                      </div>
+                    </td>
                 </tr>
                 ))}
             </tbody>

@@ -25,7 +25,7 @@ export default async function AIQuotationPage() {
           {[
             { icon: '🗄️', text: `${customers.length} ลูกค้าในระบบ` },
             { icon: '📦', text: `${products.length} สินค้าในระบบ` },
-            { icon: '🤖', text: 'Gemini 2.0 Flash' },
+            { icon: '🤖', text: 'Groq (Llama 3.3 70B)' },
             { icon: '📄', text: 'PDF เหมือนแบบ Manual' },
           ].map((chip, i) => (
             <span

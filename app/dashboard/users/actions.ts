@@ -36,3 +36,41 @@ export async function createEmployee(data: EmployeeInput) {
         return { success: false, error: error.message || String(error) };
     }
 }
+
+export async function updateEmployee(data: Partial<EmployeeInput> & { IdPIC: string }) {
+    try {
+        await prisma.empolyee.update({
+            where: { IdPIC: data.IdPIC },
+            data: {
+                ...(data.Name_PIC ? { Name_PIC: data.Name_PIC } : {}),
+                ...(data.NemeEN_PIC ? { NemeEN_PIC: data.NemeEN_PIC } : {}),
+                ...(data.Keyword !== undefined ? { Keyword: data.Keyword } : {}),
+                ...(data.Department ? { Department: data.Department } : {}),
+                ...(data.ContactNumber ? { ContactNumber: data.ContactNumber } : {}),
+                ...(data.PIC_IMAG_URL !== undefined ? { PIC_IMAG_URL: data.PIC_IMAG_URL } : {}),
+                ...(data.NOTE !== undefined ? { NOTE: data.NOTE } : {}),
+            },
+        });
+
+        revalidatePath("/dashboard/users");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error updating employee:", error);
+        return { success: false, error: error.message || String(error) };
+    }
+}
+
+export async function deleteEmployee(IdPIC: string) {
+    try {
+        await prisma.empolyee.delete({
+            where: { IdPIC },
+        });
+
+        revalidatePath("/dashboard/users");
+        revalidatePath("/dashboard/quotations/ai");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error deleting employee:", error);
+        return { success: false, error: error.message || String(error) };
+    }
+}

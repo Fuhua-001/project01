@@ -58,3 +58,51 @@ export async function createProduct(data: ProductInput) {
         return { success: false, error: error.message || String(error) };
     }
 }
+
+export async function updateProduct(data: Partial<ProductInput> & { id: string }) {
+    try {
+        await prisma.product.update({
+            where: { id: data.id },
+            data: {
+                ...(data.PROD_NAME ? { PROD_NAME: data.PROD_NAME } : {}),
+                ...(data.PROD_ALIAS ? { PROD_ALIAS: data.PROD_ALIAS } : {}),
+                ...(data.UNIT !== undefined ? { UNIT: Number(data.UNIT) } : {}),
+                ...(data.ProductType1 ? { ProductType1: data.ProductType1 } : {}),
+                ...(data.ProductType2 ? { ProductType2: data.ProductType2 } : {}),
+                ...(data.BUY_PRICE !== undefined ? { BUY_PRICE: Number(data.BUY_PRICE) } : {}),
+                ...(data.SALES_PRICE !== undefined ? { SALES_PRICE: Number(data.SALES_PRICE) } : {}),
+                ...(data.BARCODE ? { BARCODE: data.BARCODE } : {}),
+                ...(data.LIMIT !== undefined ? { LIMIT: Number(data.LIMIT) } : {}),
+                ...(data.Status ? { Status: data.Status } : {}),
+                ...(data.BRAND ? { BRAND: data.BRAND } : {}),
+                ...(data.PROD_GRP ? { PROD_GRP: data.PROD_GRP } : {}),
+                ...(data.NOTE !== undefined ? { NOTE: data.NOTE } : {}),
+                UpdatedBy: data.UpdatedBy || "User",
+                UPD_TIME: new Date(),
+                LAST_UPD: new Date(),
+            },
+        });
+
+        revalidatePath("/dashboard/inventory");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error updating product:", error);
+        return { success: false, error: error.message || String(error) };
+    }
+}
+
+export async function deleteProduct(id: string) {
+    try {
+        await prisma.$transaction(async (tx) => {
+            // Remove stock entry if linked
+            await tx.stock.deleteMany({ where: { CODE: id } });
+            await tx.product.delete({ where: { id } });
+        });
+        revalidatePath("/dashboard/inventory");
+        revalidatePath("/dashboard/quotations/ai");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error deleting product:", error);
+        return { success: false, error: error.message || String(error) };
+    }
+}

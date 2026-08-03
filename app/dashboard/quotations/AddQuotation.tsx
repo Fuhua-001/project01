@@ -34,6 +34,10 @@ export default function AddQuotationForm({ customers, employees, products }: { c
     // Sub Items State
     const [items, setItems] = useState<any[]>([]);
 
+    const matchedCustomer = customerVendor ? customers.find(c => c.name === customerVendor) : null;
+    const isLocked = !customerVendor || !!matchedCustomer;
+    const lockBadgeText = !customerVendor ? "🔒 กรุณาเลือกลูกค้าก่อน" : matchedCustomer ? "🔒 ล็อกตามลูกค้า" : "";
+
     const handleCustomerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const custName = e.target.value;
         setCustomerVendor(custName);
@@ -43,10 +47,19 @@ export default function AddQuotationForm({ customers, employees, products }: { c
             setPhone(cust.PHONE || "");
             setEmail(cust.email || "");
             setIdPIC(cust.idPIC || "");
+        } else {
+            setContact("");
+            setPhone("");
+            setEmail("");
+            setIdPIC("");
         }
     };
 
     const handleAddItem = () => {
+        if (!customerVendor) {
+            alert("กรุณาเลือกลูกค้าก่อนเพิ่มรายการสินค้า");
+            return;
+        }
         setItems([...items, {
             ITEM_CODE: "",
             PROD_NAME: "",
@@ -94,53 +107,57 @@ export default function AddQuotationForm({ customers, employees, products }: { c
 
     const handlePreview = () => {
         if (!number || !customerVendor || !idPIC) {
-            alert("กรุณากรอกข้อมูลบังคับ (เลขที่เอกสาร, ลูกค้า, รหัสพนักงาน) ให้ครบถ้วน");
+            alert("กรุณากรอกข้อมูลบังคับ (เลขที่เอกสาร, เลือกลูกค้า) ให้ครบถ้วน");
             return;
         }
         setIsPreviewingPDF(true);
     };
 
     const confirmAndSave = async () => {
+        if (!number || !customerVendor || !idPIC) {
+            alert("กรุณากรอกข้อมูลบังคับ (เลขที่เอกสาร, เลือกลูกค้า) ให้ครบถ้วน");
+            return;
+        }
+
         setIsSaving(true);
         try {
-            // Generate PDF
             if (pdfRef.current) {
                 const pdf = new jsPDF({
                     orientation: 'portrait',
                     unit: 'mm',
                     format: 'a4'
                 });
-
+                
                 const pageElements = pdfRef.current.querySelectorAll('.pdf-page');
                 
                 for (let i = 0; i < pageElements.length; i++) {
-                    const pageEl = pageElements[i] as HTMLElement;
-                    const canvas = await html2canvas(pageEl, { 
-                        scale: 2, 
+                    const pageElement = pageElements[i] as HTMLElement;
+                    
+                    const canvas = await html2canvas(pageElement, {
+                        scale: 2,
                         useCORS: true,
                         scrollY: 0,
                         scrollX: 0,
-                        windowWidth: pageEl.scrollWidth,
-                        windowHeight: pageEl.scrollHeight
+                        windowWidth: pageElement.scrollWidth,
+                        windowHeight: pageElement.scrollHeight
                     });
-                    const imgData = canvas.toDataURL('image/png');
                     
+                    const imgData = canvas.toDataURL('image/png');
                     const pdfWidth = pdf.internal.pageSize.getWidth();
                     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
                     
                     if (i > 0) {
                         pdf.addPage();
                     }
+                    
                     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
                 }
                 
                 pdf.save(`Quotation_${number}.pdf`);
             }
 
-            // Save to DB
-            const employee = employees.find(e => e.IdPIC === idPIC);
-            const creatorName = employee ? employee.Name_PIC : "Unknown";
-
+            const creatorName = employees.find(e => e.IdPIC === idPIC)?.Name_PIC || "Unknown";
+            
             const result = await createQuotation({
                 Number: number,
                 IdPIC: idPIC,
@@ -157,10 +174,10 @@ export default function AddQuotationForm({ customers, employees, products }: { c
             }, items);
 
             if (result.success) {
-                alert("บันทึกข้อมูลและดาวน์โหลด PDF เรียบร้อยแล้ว");
+                alert("บันทึกข้อมูลและโหลด PDF ใบเสนอราคาเรียบร้อยแล้ว");
                 setIsOpen(false);
                 setIsPreviewingPDF(false);
-                setNumber(generateNumber()); // Generate new number for next time
+                setNumber(generateNumber());
                 setCustomerVendor("");
                 setContact("");
                 setPhone("");
@@ -181,14 +198,14 @@ export default function AddQuotationForm({ customers, employees, products }: { c
         <div>
             <button
                 onClick={() => setIsOpen(true)}
-                className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition-colors"
+                className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition-colors font-medium"
             >
                 + สร้างใบเสนอราคาใหม่
             </button>
             {isOpen && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
                     <div className="bg-slate-800 p-6 rounded-2xl border border-white/10 w-full max-w-5xl max-h-[95vh] overflow-y-auto">
-                        <h2 className="text-2xl font-bold mb-4">สร้างเอกสาร (Sales / PR)</h2>
+                        <h2 className="text-2xl font-bold mb-4 text-white">สร้างเอกสาร (Sales / PR)</h2>
                         
                         {/* Main Document Details */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-slate-900/50 p-4 rounded-xl">
@@ -207,31 +224,85 @@ export default function AddQuotationForm({ customers, employees, products }: { c
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-slate-300 mb-1">เลือกลูกค้า (ออโต้ฟิลล์ข้อมูล) *</label>
-                                <select value={customerVendor} onChange={handleCustomerChange} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500">
-                                    <option value="">-- เลือกลูกค้า/ผู้จำหน่าย --</option>
+                                <select value={customerVendor} onChange={handleCustomerChange} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500 ring-2 ring-indigo-500/50">
+                                    <option value="">-- กรุณาเลือกลูกค้าก่อน --</option>
                                     {customers.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                                 </select>
                             </div>
                             
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">พนักงานที่รับผิดชอบ (ID PIC) *</label>
-                                <select value={idPIC} disabled className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-500 cursor-not-allowed focus:outline-none">
+                                <div className="flex justify-between items-center mb-1">
+                                    <label className="block text-sm font-medium text-slate-300">พนักงานที่รับผิดชอบ (ID PIC) *</label>
+                                    {lockBadgeText && <span className="text-[10px] text-amber-400 bg-amber-950/60 border border-amber-500/20 px-1.5 py-0.5 rounded">{lockBadgeText}</span>}
+                                </div>
+                                <select
+                                    value={idPIC}
+                                    disabled={isLocked}
+                                    onChange={(e) => setIdPIC(e.target.value)}
+                                    className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none ${
+                                        isLocked
+                                            ? "bg-slate-800/80 border-slate-700 text-slate-400 cursor-not-allowed"
+                                            : "bg-slate-900 border-slate-700 text-white focus:border-indigo-500"
+                                    }`}
+                                >
                                     <option value="">-- ออโต้ฟิลล์ตามลูกค้า --</option>
                                     {employees.map(e => <option key={e.IdPIC} value={e.IdPIC}>{e.Name_PIC}</option>)}
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">ผู้ติดต่อ (Contact)</label>
-                                <input type="text" value={contact} readOnly className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-500 cursor-not-allowed focus:outline-none" />
+                                <div className="flex justify-between items-center mb-1">
+                                    <label className="block text-sm font-medium text-slate-300">ผู้ติดต่อ (Contact)</label>
+                                    {lockBadgeText && <span className="text-[10px] text-amber-400 bg-amber-950/60 border border-amber-500/20 px-1.5 py-0.5 rounded">{lockBadgeText}</span>}
+                                </div>
+                                <input
+                                    type="text"
+                                    value={contact}
+                                    disabled={isLocked}
+                                    placeholder={!customerVendor ? "กรุณาเลือกลูกค้าก่อน..." : ""}
+                                    onChange={(e) => setContact(e.target.value)}
+                                    className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none ${
+                                        isLocked
+                                            ? "bg-slate-800/80 border-slate-700 text-slate-400 cursor-not-allowed"
+                                            : "bg-slate-900 border-slate-700 text-white focus:border-indigo-500"
+                                    }`}
+                                />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">เบอร์โทรศัพท์</label>
-                                <input type="text" value={phone} readOnly className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-500 cursor-not-allowed focus:outline-none" />
+                                <div className="flex justify-between items-center mb-1">
+                                    <label className="block text-sm font-medium text-slate-300">เบอร์โทรศัพท์</label>
+                                    {lockBadgeText && <span className="text-[10px] text-amber-400 bg-amber-950/60 border border-amber-500/20 px-1.5 py-0.5 rounded">{lockBadgeText}</span>}
+                                </div>
+                                <input
+                                    type="text"
+                                    value={phone}
+                                    disabled={isLocked}
+                                    placeholder={!customerVendor ? "กรุณาเลือกลูกค้าก่อน..." : ""}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none ${
+                                        isLocked
+                                            ? "bg-slate-800/80 border-slate-700 text-slate-400 cursor-not-allowed"
+                                            : "bg-slate-900 border-slate-700 text-white focus:border-indigo-500"
+                                    }`}
+                                />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-1">อีเมล</label>
-                                <input type="email" value={email} readOnly className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-slate-500 cursor-not-allowed focus:outline-none" />
+                                <div className="flex justify-between items-center mb-1">
+                                    <label className="block text-sm font-medium text-slate-300">อีเมล</label>
+                                    {lockBadgeText && <span className="text-[10px] text-amber-400 bg-amber-950/60 border border-amber-500/20 px-1.5 py-0.5 rounded">{lockBadgeText}</span>}
+                                </div>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    disabled={isLocked}
+                                    placeholder={!customerVendor ? "กรุณาเลือกลูกค้าก่อน..." : ""}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none ${
+                                        isLocked
+                                            ? "bg-slate-800/80 border-slate-700 text-slate-400 cursor-not-allowed"
+                                            : "bg-slate-900 border-slate-700 text-white focus:border-indigo-500"
+                                    }`}
+                                />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-slate-300 mb-1">ระยะเวลายืนยันราคา</label>
@@ -253,7 +324,13 @@ export default function AddQuotationForm({ customers, employees, products }: { c
                         <div className="bg-slate-900/50 p-4 rounded-xl mb-6">
                             <div className="flex justify-between items-center border-b border-white/10 pb-2 mb-4">
                                 <h3 className="text-lg font-semibold text-indigo-400">รายการสินค้า (Items)</h3>
-                                <button onClick={handleAddItem} className="bg-slate-700 hover:bg-slate-600 text-xs px-3 py-1 rounded">+ เพิ่มรายการ</button>
+                                <button
+                                    onClick={handleAddItem}
+                                    disabled={!customerVendor}
+                                    className="bg-slate-700 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed text-xs px-3 py-1 rounded"
+                                >
+                                    + เพิ่มรายการ
+                                </button>
                             </div>
                             
                             <div className="overflow-x-auto">
@@ -290,7 +367,9 @@ export default function AddQuotationForm({ customers, employees, products }: { c
                                         ))}
                                         {items.length === 0 && (
                                             <tr>
-                                                <td colSpan={7} className="text-center py-4 text-slate-500">ยังไม่มีรายการสินค้า</td>
+                                                <td colSpan={7} className="text-center py-4 text-slate-500">
+                                                    {!customerVendor ? "🔒 กรุณาเลือกลูกค้าด้านบนก่อนเพิ่มรายการสินค้า" : "ยังไม่มีรายการสินค้า"}
+                                                </td>
                                             </tr>
                                         )}
                                     </tbody>
@@ -301,15 +380,50 @@ export default function AddQuotationForm({ customers, employees, products }: { c
                             </div>
                         </div>
 
-                        <div className="flex justify-end gap-2 mt-6">
+                        {/* Action buttons */}
+                        <div className="flex justify-between items-center mb-6">
                             <button onClick={() => setIsOpen(false)} className="px-4 py-2 text-slate-400 hover:text-white">ยกเลิก</button>
-                            <button onClick={handlePreview} className="bg-indigo-600 text-white px-4 py-2 rounded-lg">พรีวิวและบันทึก</button>
+                            <div className="flex gap-3">
+                                <button onClick={handlePreview} disabled={!customerVendor} className="bg-slate-700 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm">🔍 ขยายดูแบบเต็มจอ</button>
+                                <button onClick={confirmAndSave} disabled={isSaving || !customerVendor} className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg font-bold text-sm">
+                                    {isSaving ? "⏳ กำลังบันทึก..." : "✅ บันทึก DB & ดาวน์โหลด PDF"}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* ─── Real-time Live PDF Preview ──────────────────────────── */}
+                        <div className="border-t border-white/10 pt-6">
+                            <div className="flex justify-between items-center mb-3">
+                                <h3 className="text-sm font-bold text-indigo-300 flex items-center gap-2">
+                                    <span>📄</span> พรีวิวใบเสนอราคาแบบ Real-time (PDF Live Preview)
+                                </h3>
+                                <span className="text-xs text-slate-400">อัปเดตอัตโนมัติตามข้อมูลที่กรอกด้านบน</span>
+                            </div>
+                            <div className="bg-slate-950 p-4 rounded-xl border border-white/10 overflow-x-auto flex justify-center items-start max-h-[600px]">
+                                <div className="shadow-2xl">
+                                    <QuotationPDF 
+                                        ref={pdfRef}
+                                        number={number}
+                                        customerVendor={customerVendor}
+                                        contact={contact}
+                                        phone={phone}
+                                        email={email}
+                                        idPIC={idPIC}
+                                        creatorName={employees.find(e => e.IdPIC === idPIC)?.Name_PIC || "Unknown"}
+                                        transactionType={transactionType}
+                                        paymentTerms={paymentTerms}
+                                        creditTerms={creditTerms}
+                                        priceValidity={priceValidity}
+                                        items={items}
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* PDF Preview Modal */}
+            {/* PDF Preview Modal (Full Screen) */}
             {isPreviewingPDF && (
                 <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-[60]">
                     <div className="bg-slate-800 p-6 rounded-2xl border border-white/10 w-full max-w-5xl max-h-[95vh] flex flex-col">
@@ -319,10 +433,8 @@ export default function AddQuotationForm({ customers, employees, products }: { c
                         </div>
                         
                         <div className="flex-1 overflow-auto bg-slate-900 rounded-lg p-4 flex justify-center items-start">
-                            {/* The PDF Template Component */}
                             <div className="shadow-2xl">
                                 <QuotationPDF 
-                                    ref={pdfRef}
                                     number={number}
                                     customerVendor={customerVendor}
                                     contact={contact}
@@ -342,7 +454,7 @@ export default function AddQuotationForm({ customers, employees, products }: { c
                         <div className="flex justify-end gap-4 mt-6 pt-4 border-t border-slate-700">
                             <button onClick={() => setIsPreviewingPDF(false)} className="px-6 py-2 text-slate-300 hover:text-white bg-slate-700 rounded-lg">กลับไปแก้ไข</button>
                             <button onClick={confirmAndSave} disabled={isSaving} className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2">
-                                {isSaving ? "กำลังประมวลผล..." : "ยืนยัน โหลด PDF & บันทึกเข้า DB"}
+                                {isSaving ? "กำลังประมวลผล..." : "✅ ยืนยัน โหลด PDF & บันทึกเข้า DB"}
                             </button>
                         </div>
                     </div>

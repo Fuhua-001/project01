@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import AddQuotationForm from "./AddQuotation";
 import ViewQuotationButton from "./ViewQuotationButton";
-import { fetchFormData } from "./actions";
+import DeleteButton from "../DeleteButton";
+import { fetchFormData, deleteQuotationAction } from "./actions";
 import Link from "next/link";
 
 export default async function QuotationsPage(props: { searchParams?: Promise<{ page?: string }> }) {
@@ -76,7 +77,10 @@ export default async function QuotationsPage(props: { searchParams?: Promise<{ p
                                         {totalAmount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ฿
                                     </td>
                                     <td className="py-3 px-4 text-center">
-                                        <ViewQuotationButton doc={doc} items={docItems} creatorName={doc.CreatedBy} />
+                                        <div className="flex items-center justify-center gap-2">
+                                            <ViewQuotationButton doc={doc} items={docItems} creatorName={doc.CreatedBy} />
+                                            <DeleteButton id={doc.Id} itemName={`ใบเสนอราคา ${doc.Number}`} onDelete={deleteQuotationAction} />
+                                        </div>
                                     </td>
                                 </tr>
                                 );

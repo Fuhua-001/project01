@@ -1,4 +1,7 @@
 import AddCustomerForm from "./AddCustomerForm";
+import EditCustomerModal from "./EditCustomerModal";
+import DeleteButton from "../DeleteButton";
+import { deleteCustomer } from "./actions";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
@@ -15,44 +18,49 @@ export default async function CustomersPage(props: { searchParams?: Promise<{ pa
     prisma.customer.count()
   ]);
   const totalPages = Math.ceil(total / take);
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">จัดการข้อมูลลูกค้า (Customers)</h1>
+        <h1 className="text-3xl font-bold">ข้อมูลลูกค้า (Customers)</h1>
         <AddCustomerForm />
       </div>
+
       <div className="bg-slate-900/50 p-6 rounded-2xl border border-white/5 min-h-[400px]">
-        <h2 className="text-xl text-white mb-4">รายชื่อลูกค้าทั้งหมด (รวม {total} คน)</h2>
+        <h2 className="text-xl text-white mb-4">รายชื่อลูกค้าทั้งหมด (รวม {total} รายการ)</h2>
         
         <div className="overflow-x-auto w-full">
             <table className="w-full text-left text-slate-300 min-w-max">
             <thead>
                 <tr className="border-b border-slate-700">
-                <th className="py-2 px-4">รหัส (ID)</th>
-                <th className="py-2 px-4">ชื่อลูกค้า (Name)</th>
-                <th className="py-2 px-4">อีเมล (Email)</th>
-                <th className="py-2 px-4">โทรศัพท์ (Phone)</th>
-                <th className="py-2 px-4">รหัสผู้รับผิดชอบ (ID PIC)</th>
-                <th className="py-2 px-4">เลขประจำตัวผู้เสียภาษี</th>
-                <th className="py-2 px-4">กลุ่มลูกค้า (ACC_GRP)</th>
-                <th className="py-2 px-4">ผู้ติดต่อ (CT_PERS)</th>
-                <th className="py-2 px-4">ที่อยู่</th>
-                <th className="py-2 px-4">หมายเหตุ</th>
+                <th className="py-2 px-4">รหัสลูกค้า</th>
+                <th className="py-2 px-4">ชื่อลูกค้า / บริษัท</th>
+                <th className="py-2 px-4">ผู้ติดต่อ (Contact)</th>
+                <th className="py-2 px-4">เบอร์โทรศัพท์</th>
+                <th className="py-2 px-4">อีเมล</th>
+                <th className="py-2 px-4">กลุ่มบัญชี</th>
+                <th className="py-2 px-4">เลขผู้เสียภาษี</th>
+                <th className="py-2 px-4">รหัสพนักงานดูแล</th>
+                <th className="py-2 px-4 text-center">จัดการ</th>
                 </tr>
             </thead>
             <tbody>
-                {customers.map((customer) => (
-                <tr key={customer.id} className="border-b border-slate-800 hover:bg-slate-800/50">
-                    <td className="py-2 px-4">{customer.id}</td>
-                    <td className="py-2 px-4">{customer.name}</td>
-                    <td className="py-2 px-4">{customer.email}</td>
-                    <td className="py-2 px-4">{customer.PHONE}</td>
-                    <td className="py-2 px-4">{customer.idPIC}</td>
-                    <td className="py-2 px-4">{customer.TaxIDNumber || "-"}</td>
-                    <td className="py-2 px-4">{customer.ACC_GRP}</td>
-                    <td className="py-2 px-4">{customer.CT_PERS}</td>
-                    <td className="py-2 px-4">{customer.Address || "-"}</td>
-                    <td className="py-2 px-4">{customer.NOTE || "-"}</td>
+                {customers.map((c) => (
+                <tr key={c.id} className="border-b border-slate-800 hover:bg-slate-800/50">
+                    <td className="py-2 px-4 font-mono text-xs text-indigo-400">{c.id}</td>
+                    <td className="py-2 px-4 font-medium text-white">{c.name}</td>
+                    <td className="py-2 px-4">{c.CT_PERS}</td>
+                    <td className="py-2 px-4 font-mono text-xs">{c.PHONE}</td>
+                    <td className="py-2 px-4 text-xs">{c.email}</td>
+                    <td className="py-2 px-4">{c.ACC_GRP}</td>
+                    <td className="py-2 px-4 text-xs font-mono">{c.TaxIDNumber || "-"}</td>
+                    <td className="py-2 px-4 text-xs font-mono">{c.idPIC}</td>
+                    <td className="py-2 px-4 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <EditCustomerModal customer={c} />
+                        <DeleteButton id={c.id} itemName={c.name} onDelete={deleteCustomer} />
+                      </div>
+                    </td>
                 </tr>
                 ))}
             </tbody>
