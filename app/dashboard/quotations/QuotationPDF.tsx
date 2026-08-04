@@ -27,7 +27,7 @@ export const QuotationPDF = React.forwardRef<HTMLDivElement, QuotationPDFProps>(
     const vat = items.reduce((sum, item) => sum + item.VAT, 0);
     const total = items.reduce((sum, item) => sum + item.TOTAL, 0);
 
-    const ITEMS_PER_PAGE = 12;
+    const ITEMS_PER_PAGE = 10;
     const pages = [];
     for (let i = 0; i < items.length; i += ITEMS_PER_PAGE) {
         pages.push(items.slice(i, i + ITEMS_PER_PAGE));
