@@ -13,9 +13,9 @@ export default async function AIQuotationPage() {
         <div className="flex items-center gap-3 mb-2">
           <span className="text-4xl">✨</span>
           <div>
-            <h1 className="text-3xl font-bold text-white">AI สร้างใบเสนอราคา</h1>
+            <h1 className="text-3xl font-bold text-white">AI CRM Copilot</h1>
             <p className="text-slate-400 text-sm mt-1">
-              บอก AI เป็นภาษาธรรมดา — AI จะดึงข้อมูลลูกค้าและสินค้าจากฐานข้อมูล แล้วสร้างใบเสนอราคาให้อัตโนมัติ
+              ผู้ช่วยอัจฉริยะสั่งงานด้วยภาษาธรรมดา — ออกใบเสนอราคา จัดการข้อมูลลูกค้า สินค้า และพนักงานครบจบในระบบเดียว
             </p>
           </div>
         </div>

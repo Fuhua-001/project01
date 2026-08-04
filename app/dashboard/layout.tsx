@@ -10,10 +10,19 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-slate-950 text-slate-100 flex">
       {/* Sidebar Navigation */}
       <aside className="w-64 bg-slate-900 border-r border-white/10 flex flex-col">
-        <div className="p-6">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-indigo-400 bg-clip-text text-transparent">
-            System CRM
-          </h2>
+        <div className="p-6 flex items-center gap-3 border-b border-white/5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img 
+            src="/logo.jpg" 
+            alt="Premier Automation" 
+            className="w-10 h-10 object-contain rounded-lg shadow-md border border-white/10" 
+          />
+          <div>
+            <h2 className="text-xl font-bold bg-gradient-to-r from-white to-indigo-300 bg-clip-text text-transparent">
+              System CRM
+            </h2>
+            <p className="text-[10px] text-indigo-400 font-semibold tracking-wider uppercase">Premier Automation</p>
+          </div>
         </div>
         
         <nav className="flex-1 px-4 space-y-2">
@@ -23,8 +32,8 @@ export default function DashboardLayout({
           <Link href="/dashboard/quotations" className="block px-4 py-3 rounded-lg hover:bg-white/5 transition-colors text-slate-300 hover:text-white">
             📝 ใบเสนอราคา (Quotations)
           </Link>
-          <Link href="/dashboard/quotations/ai" className="block px-4 py-3 pl-8 rounded-lg hover:bg-white/5 transition-colors text-slate-300 hover:text-violet-300 text-sm">
-            ✨ AI สร้างใบเสนอราคา
+          <Link href="/dashboard/quotations/ai" className="block px-4 py-3 pl-8 rounded-lg hover:bg-white/5 transition-colors text-slate-300 hover:text-violet-300 text-sm font-medium">
+            ✨ AI CRM Copilot
           </Link>
           <Link href="/dashboard/customers" className="block px-4 py-3 rounded-lg hover:bg-white/5 transition-colors text-slate-300 hover:text-white">
             👥 ฐานข้อมูลลูกค้า (Customers)

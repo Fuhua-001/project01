@@ -49,11 +49,19 @@ export const QuotationPDF = React.forwardRef<HTMLDivElement, QuotationPDFProps>(
                         className="pdf-page box-border relative shadow-lg bg-white overflow-hidden"
                         style={{ width: '210mm', height: '297mm', padding: '32px', margin: '0 auto', fontFamily: 'sans-serif', backgroundColor: '#ffffff', color: '#000000' }}
                     >
-                        {/* Header (Repeated on every page) - Reverted to first print layout */}
-                        <div className="flex justify-between items-start" style={{ marginBottom: '32px', borderBottom: '2px solid #e2e8f0', paddingBottom: '24px' }}>
-                            <div>
-                                <h1 className="text-3xl font-bold" style={{ color: '#4338ca', margin: 0 }}>ใบเสนอราคา</h1>
-                                <p className="text-lg" style={{ color: '#475569', marginTop: '4px', margin: 0 }}>QUOTATION</p>
+                        {/* Header (Repeated on every page) */}
+                        <div className="flex justify-between items-center" style={{ marginBottom: '32px', borderBottom: '2px solid #e2e8f0', paddingBottom: '24px' }}>
+                            <div className="flex items-center gap-4">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img 
+                                    src="/logo.jpg" 
+                                    alt="Company Logo" 
+                                    style={{ height: '70px', width: 'auto', objectFit: 'contain', borderRadius: '6px' }} 
+                                />
+                                <div>
+                                    <h1 className="text-3xl font-bold" style={{ color: '#4338ca', margin: 0, lineHeight: 1.1 }}>ใบเสนอราคา</h1>
+                                    <p className="text-base font-medium tracking-wide" style={{ color: '#475569', marginTop: '4px', margin: 0 }}>QUOTATION</p>
+                                </div>
                             </div>
                             <div className="text-right text-sm">
                                 <p style={{ margin: '0 0 4px 0' }}><span className="font-semibold">หน้า (Page):</span> {pageIndex + 1} / {pages.length}</p>
